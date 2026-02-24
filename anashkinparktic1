@@ -1,455 +1,617 @@
-package anashkinparktic1;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Modern Two-Way Colorful Chat ✨</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-public class ModernTwoWayChat extends JFrame {
-    
-    private JTextArea chatAreaLeft, chatAreaRight;
-    private JTextArea messageAreaLeft, messageAreaRight;
-    private JButton sendButtonLeft, sendButtonRight;
-    private JButton clearButtonLeft, clearButtonRight;
-    private JLabel statusLeft, statusRight;
-    private JCheckBox boldCheckLeft, boldCheckRight;
-    private JComboBox<String> fontSizeLeft, fontSizeRight;
-    private JPanel leftPanel, rightPanel;
-    
-    private final Color[] gradientColors = {
-        new Color(255, 182, 193), // Light Pink
-        new Color(176, 224, 230), // Powder Blue
-        new Color(221, 160, 221), // Plum
-        new Color(255, 218, 185), // Peach
-        new Color(144, 238, 144)  // Light Green
-    };
-    
-    public ModernTwoWayChat() {
-        setTitle("✨ Modern Two-Way Colorful Chat ✨");
-        setSize(1000, 700);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        
-        // Инициализируем компоненты ДО их использования
-        chatAreaLeft = createChatArea(new Color(240, 248, 255));
-        chatAreaRight = createChatArea(new Color(255, 240, 245));
-        messageAreaLeft = createMessageArea();
-        messageAreaRight = createMessageArea();
-        
-        // Main layout
-        setLayout(new BorderLayout());
-        
-        // Create header
-        add(createHeader(), BorderLayout.NORTH);
-        
-        // Create main chat panels
-        JSplitPane splitPane = createChatSplitPane();
-        add(splitPane, BorderLayout.CENTER);
-        
-        // Create status bar
-        add(createStatusBar(), BorderLayout.SOUTH);
-        
-        // Add animated background
-        addAnimatedBackground();
-        
-        // Setup keyboard shortcuts
-        setupKeyboardShortcuts();
-        
-        // Style the frame
-        getContentPane().setBackground(new Color(245, 245, 245));
-    }
-    
-    private JPanel createHeader() {
-        JPanel header = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-                int w = getWidth();
-                int h = getHeight();
-                GradientPaint gp = new GradientPaint(0, 0, new Color(147, 112, 219), 
-                                                      w, 0, new Color(255, 182, 193));
-                g2d.setPaint(gp);
-                g2d.fillRect(0, 0, w, h);
-            }
-        };
-        header.setPreferredSize(new Dimension(getWidth(), 60));
-        header.setLayout(new FlowLayout(FlowLayout.CENTER));
-        
-        JLabel titleLabel = new JLabel("Colorful Messenger 2.0");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        titleLabel.setForeground(Color.WHITE);
-        header.add(titleLabel);
-        
-        return header;
-    }
-    
-    private JSplitPane createChatSplitPane() {
-        // Create left panel (User 1)
-        leftPanel = createChatPanel("User 1 👤", new Color(70, 130, 180), true);
-        
-        // Create right panel (User 2)
-        rightPanel = createChatPanel("User 2 👩", new Color(255, 105, 180), false);
-        
-        // Split pane
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
-        splitPane.setDividerLocation(470);
-        splitPane.setDividerSize(10);
-        splitPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        
-        return splitPane;
-    }
-    
-    private JPanel createChatPanel(String title, Color buttonColor, boolean isLeft) {
-        JPanel panel = new JPanel(new BorderLayout(5, 5));
-        panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(buttonColor, 2), 
-                title, 
-                javax.swing.border.TitledBorder.CENTER,
-                javax.swing.border.TitledBorder.TOP,
-                new Font("Segoe UI", Font.BOLD, 14),
-                buttonColor
-            ),
-            BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        ));
-        panel.setBackground(new Color(255, 255, 255, 180));
-        
-        // Используем уже инициализированные chatArea
-        JTextArea chatArea = isLeft ? chatAreaLeft : chatAreaRight;
-        
-        JScrollPane scrollPane = new JScrollPane(chatArea);
-        scrollPane.setBorder(BorderFactory.createLineBorder(buttonColor, 1));
-        
-        // Input area with formatting options
-        JPanel inputPanel = createInputPanel(isLeft, buttonColor);
-        
-        // Status label
-        JLabel status = new JLabel("Online");
-        status.setForeground(new Color(46, 204, 113));
-        status.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        
-        if (isLeft) {
-            statusLeft = status;
-        } else {
-            statusRight = status;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
-        
-        panel.add(status, BorderLayout.NORTH);
-        panel.add(scrollPane, BorderLayout.CENTER);
-        panel.add(inputPanel, BorderLayout.SOUTH);
-        
-        return panel;
-    }
-    
-    private JPanel createInputPanel(boolean isLeft, Color buttonColor) {
-        JPanel inputPanel = new JPanel(new BorderLayout(5, 5));
-        inputPanel.setOpaque(false);
-        
-        // Используем уже инициализированные messageArea
-        JTextArea messageArea = isLeft ? messageAreaLeft : messageAreaRight;
-        JScrollPane messageScroll = new JScrollPane(messageArea);
-        messageScroll.setPreferredSize(new Dimension(200, 60));
-        
-        // Formatting options
-        JPanel formatPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
-        formatPanel.setOpaque(false);
-        
-        JCheckBox boldCheck = new JCheckBox("B");
-        boldCheck.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        boldCheck.setToolTipText("Bold text");
-        boldCheck.setOpaque(false);
-        
-        String[] sizes = {"12", "14", "16", "18", "20"};
-        JComboBox<String> sizeCombo = new JComboBox<>(sizes);
-        sizeCombo.setSelectedItem("14");
-        sizeCombo.setToolTipText("Font size");
-        
-        if (isLeft) {
-            boldCheckLeft = boldCheck;
-            fontSizeLeft = sizeCombo;
-        } else {
-            boldCheckRight = boldCheck;
-            fontSizeRight = sizeCombo;
+
+        .chat-container {
+            width: 1200px;
+            max-width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
         }
-        
-        formatPanel.add(boldCheck);
-        formatPanel.add(sizeCombo);
-        
-        // Button panel
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 5, 0));
-        buttonPanel.setOpaque(false);
-        
-        JButton sendBtn = createStyledButton("Send 📤", buttonColor);
-        JButton clearBtn = createStyledButton("Clear 🧹", new Color(169, 169, 169));
-        
-        sendBtn.addActionListener(e -> sendMessage(messageArea, isLeft));
-        clearBtn.addActionListener(e -> messageArea.setText(""));
-        
-        // Font formatting listeners
-        boldCheck.addActionListener(e -> updateFont(messageArea, isLeft));
-        sizeCombo.addActionListener(e -> updateFont(messageArea, isLeft));
-        
-        buttonPanel.add(sendBtn);
-        buttonPanel.add(clearBtn);
-        
-        if (isLeft) {
-            sendButtonLeft = sendBtn;
-            clearButtonLeft = clearBtn;
-        } else {
-            sendButtonRight = sendBtn;
-            clearButtonRight = clearBtn;
+
+        /* Header */
+        .chat-header {
+            background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
-        
-        // Assemble input panel
-        JPanel topInput = new JPanel(new BorderLayout(5, 0));
-        topInput.setOpaque(false);
-        topInput.add(messageScroll, BorderLayout.CENTER);
-        topInput.add(formatPanel, BorderLayout.WEST);
-        
-        inputPanel.add(topInput, BorderLayout.CENTER);
-        inputPanel.add(buttonPanel, BorderLayout.EAST);
-        
-        return inputPanel;
-    }
-    
-    private void updateFont(JTextArea messageArea, boolean isLeft) {
-        JCheckBox boldCheck = isLeft ? boldCheckLeft : boldCheckRight;
-        JComboBox<String> fontSize = isLeft ? fontSizeLeft : fontSizeRight;
-        
-        int size = Integer.parseInt((String) fontSize.getSelectedItem());
-        int style = boldCheck.isSelected() ? Font.BOLD : Font.PLAIN;
-        
-        messageArea.setFont(new Font("Segoe UI", style, size));
-    }
-    
-    private JButton createStyledButton(String text, Color bgColor) {
-        JButton btn = new JButton(text);
-        btn.setBackground(bgColor);
-        btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btn.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(bgColor.darker(), 1),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
-        
-        // Hover effect
-        btn.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) {
-                btn.setBackground(bgColor.brighter());
+
+        /* Main chat area */
+        .chat-main {
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            min-height: 500px;
+        }
+
+        /* Individual chat panels */
+        .chat-panel {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            border: 2px solid;
+            transition: transform 0.3s ease;
+        }
+
+        .chat-panel:hover {
+            transform: translateY(-5px);
+        }
+
+        .panel-left {
+            border-color: #4682B4;
+        }
+
+        .panel-right {
+            border-color: #FF69B4;
+        }
+
+        /* Panel header */
+        .panel-header {
+            padding: 15px;
+            border-bottom: 2px solid;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 13px 13px 0 0;
+        }
+
+        .panel-left .panel-header {
+            background: linear-gradient(135deg, #4682B4 0%, #5F9EA0 100%);
+            border-color: #4682B4;
+            color: white;
+        }
+
+        .panel-right .panel-header {
+            background: linear-gradient(135deg, #FF69B4 0%, #FF1493 100%);
+            border-color: #FF69B4;
+            color: white;
+        }
+
+        .user-title {
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status {
+            font-size: 12px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .status.online {
+            background: #4CAF50;
+            color: white;
+        }
+
+        /* Chat area */
+        .chat-area {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            min-height: 300px;
+            max-height: 400px;
+            background: #f8f9fa;
+        }
+
+        .panel-left .chat-area {
+            background: #F0F8FF;
+        }
+
+        .panel-right .chat-area {
+            background: #FFF0F5;
+        }
+
+        /* Message bubbles */
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message-left {
+            background: #4682B4;
+            color: white;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-right {
+            background: #FF69B4;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message-time {
+            font-size: 10px;
+            opacity: 0.8;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        /* Input area */
+        .input-area {
+            padding: 15px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .formatting-tools {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 5px;
+            background: #f1f3f4;
+            border-radius: 8px;
+        }
+
+        .format-btn {
+            padding: 5px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .format-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .format-btn.bold {
+            background: #333;
+            color: white;
+        }
+
+        .font-size-select {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            resize: none;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
+            margin-bottom: 10px;
+            transition: border-color 0.3s;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #6B8DD6;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-send-left {
+            background: linear-gradient(135deg, #4682B4, #5F9EA0);
+        }
+
+        .btn-send-right {
+            background: linear-gradient(135deg, #FF69B4, #FF1493);
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #808080, #A9A9A9);
+        }
+
+        /* Status bar */
+        .status-bar {
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .secure-badge i {
+            color: #4CAF50;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
             }
-            public void mouseExited(MouseEvent e) {
-                btn.setBackground(bgColor);
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
-        });
-        
-        return btn;
-    }
-    
-    private JTextArea createChatArea(Color bgColor) {
-        JTextArea ta = new JTextArea();
-        ta.setEditable(false);
-        ta.setLineWrap(true);
-        ta.setWrapStyleWord(true);
-        ta.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        ta.setBackground(bgColor);
-        ta.setMargin(new Insets(10, 10, 10, 10));
-        return ta;
-    }
-    
-    private JTextArea createMessageArea() {
-        JTextArea ta = new JTextArea(3, 20);
-        ta.setLineWrap(true);
-        ta.setWrapStyleWord(true);
-        ta.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        ta.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
-            BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        ));
-        return ta;
-    }
-    
-    private JPanel createStatusBar() {
-        JPanel statusBar = new JPanel(new BorderLayout());
-        statusBar.setBackground(new Color(240, 240, 240));
-        statusBar.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        
-        JLabel statusLabel = new JLabel("Both users are online • Secure connection • Encrypted");
-        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        statusLabel.setForeground(new Color(100, 100, 100));
-        
-        JLabel timeLabel = new JLabel();
-        timeLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        
-        // Update time
-        Timer timer = new Timer(1000, e -> {
-            LocalTime now = LocalTime.now();
-            timeLabel.setText(now.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
-        });
-        timer.start();
-        
-        statusBar.add(statusLabel, BorderLayout.WEST);
-        statusBar.add(timeLabel, BorderLayout.EAST);
-        
-        return statusBar;
-    }
-    
-    private void sendMessage(JTextArea inputArea, boolean fromLeft) {
-        String message = inputArea.getText().trim();
-        if (!message.isEmpty()) {
-            String user = fromLeft ? "User 1" : "User 2";
-            String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+        }
+
+        .message {
+            animation: slideIn 0.3s ease;
+        }
+
+        /* Scrollbar styling */
+        .chat-area::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-area::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .chat-area::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .chat-area::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .chat-main {
+                flex-direction: column;
+            }
             
-            // Check formatting
-            JCheckBox boldCheck = fromLeft ? boldCheckLeft : boldCheckRight;
-            JComboBox<String> fontSize = fromLeft ? fontSizeLeft : fontSizeRight;
-            
-            String formattedMessage = String.format("[%s] %s: %s\n", time, user, message);
-            
-            // Add to both chat areas with formatting
-            if (fromLeft) {
-                appendFormattedMessage(chatAreaLeft, formattedMessage, boldCheck, fontSize);
-                appendFormattedMessage(chatAreaRight, formattedMessage, boldCheck, fontSize);
+            .chat-container {
+                margin: 10px;
+            }
+        }
+
+        /* Animated background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .animated-bg::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                #ff6b6b,
+                #4ecdc4,
+                #45b7d1,
+                #96ceb4,
+                #ffeaa7,
+                #dfe6e9
+            );
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(-10%, -10%) rotate(5deg);
+            }
+            50% {
+                transform: translate(-20%, -20%) rotate(10deg);
+            }
+            75% {
+                transform: translate(-10%, -10%) rotate(5deg);
+            }
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="chat-header">
+            💬 Colorful Messenger 2.0 💬
+        </div>
+
+        <!-- Main chat area -->
+        <div class="chat-main">
+            <!-- Left Panel (User 1) -->
+            <div class="chat-panel panel-left">
+                <div class="panel-header">
+                    <span class="user-title">👤 User 1</span>
+                    <span class="status online" id="statusLeft">Online</span>
+                </div>
+                
+                <div class="chat-area" id="chatLeft"></div>
+                
+                <div class="input-area">
+                    <div class="formatting-tools">
+                        <button class="format-btn bold" id="boldLeft" onclick="toggleBold('left')">B</button>
+                        <select class="font-size-select" id="fontSizeLeft" onchange="updateFont('left')">
+                            <option value="12">12</option>
+                            <option value="14" selected>14</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="20">20</option>
+                        </select>
+                    </div>
+                    
+                    <textarea class="message-input" id="messageLeft" 
+                              placeholder="Введите сообщение... (Ctrl+Enter для отправки)" 
+                              rows="3"></textarea>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-send-left" onclick="sendMessage('left')">
+                            📤 Отправить
+                        </button>
+                        <button class="btn btn-clear" onclick="clearInput('left')">
+                            🧹 Очистить
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel (User 2) -->
+            <div class="chat-panel panel-right">
+                <div class="panel-header">
+                    <span class="user-title">👩 User 2</span>
+                    <span class="status online" id="statusRight">Online</span>
+                </div>
+                
+                <div class="chat-area" id="chatRight"></div>
+                
+                <div class="input-area">
+                    <div class="formatting-tools">
+                        <button class="format-btn bold" id="boldRight" onclick="toggleBold('right')">B</button>
+                        <select class="font-size-select" id="fontSizeRight" onchange="updateFont('right')">
+                            <option value="12">12</option>
+                            <option value="14" selected>14</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="20">20</option>
+                        </select>
+                    </div>
+                    
+                    <textarea class="message-input" id="messageRight" 
+                              placeholder="Введите сообщение... (Ctrl+Enter для отправки)" 
+                              rows="3"></textarea>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-send-right" onclick="sendMessage('right')">
+                            📤 Отправить
+                        </button>
+                        <button class="btn btn-clear" onclick="clearInput('right')">
+                            🧹 Очистить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="secure-badge">
+                <span>🔒</span>
+                <span>Both users are online • Secure connection • Encrypted</span>
+            </div>
+            <div id="currentTime"></div>
+        </div>
+    </div>
+
+    <script>
+        // Состояние форматирования
+        let boldLeft = false;
+        let boldRight = false;
+        let fontSizeLeft = 14;
+        let fontSizeRight = 14;
+
+        // Функция для обновления времени
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ru-RU', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Переключение жирного текста
+        function toggleBold(side) {
+            if (side === 'left') {
+                boldLeft = !boldLeft;
+                document.getElementById('boldLeft').style.background = boldLeft ? '#000' : '#333';
+                document.getElementById('boldLeft').style.color = boldLeft ? '#fff' : '#fff';
             } else {
-                appendFormattedMessage(chatAreaRight, formattedMessage, boldCheck, fontSize);
-                appendFormattedMessage(chatAreaLeft, formattedMessage, boldCheck, fontSize);
-            }
-            
-            inputArea.setText("");
-            
-            // Update status
-            if (fromLeft) {
-                statusLeft.setText("Typing...");
-                Timer statusTimer = new Timer(1000, e -> statusLeft.setText("Online"));
-                statusTimer.setRepeats(false);
-                statusTimer.start();
-            } else {
-                statusRight.setText("Typing...");
-                Timer statusTimer = new Timer(1000, e -> statusRight.setText("Online"));
-                statusTimer.setRepeats(false);
-                statusTimer.start();
+                boldRight = !boldRight;
+                document.getElementById('boldRight').style.background = boldRight ? '#000' : '#333';
+                document.getElementById('boldRight').style.color = boldRight ? '#fff' : '#fff';
             }
         }
-    }
-    
-    private void appendFormattedMessage(JTextArea chatArea, String message, 
-                                       JCheckBox boldCheck, JComboBox<String> fontSize) {
-        int currentSize = Integer.parseInt((String) fontSize.getSelectedItem());
-        boolean isBold = boldCheck.isSelected();
-        
-        // Store current font
-        Font currentFont = chatArea.getFont();
-        
-        // Apply formatting
-        chatArea.setFont(new Font(currentFont.getFontName(), 
-                                  isBold ? Font.BOLD : Font.PLAIN, 
-                                  currentSize));
-        chatArea.append(message);
-        
-        // Restore default font
-        chatArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        
-        // Auto-scroll
-        chatArea.setCaretPosition(chatArea.getDocument().getLength());
-    }
-    
-    private void addAnimatedBackground() {
-        JPanel glass = (JPanel) getGlassPane();
-        glass.setVisible(true);
-        glass.setLayout(new BorderLayout());
-        
-        JPanel backgroundPanel = new JPanel() {
-            private int offset = 0;
+
+        // Обновление размера шрифта
+        function updateFont(side) {
+            if (side === 'left') {
+                fontSizeLeft = parseInt(document.getElementById('fontSizeLeft').value);
+            } else {
+                fontSizeRight = parseInt(document.getElementById('fontSizeRight').value);
+            }
+        }
+
+        // Отправка сообщения
+        function sendMessage(fromSide) {
+            const messageInput = document.getElementById(`message${fromSide === 'left' ? 'Left' : 'Right'}`);
+            const message = messageInput.value.trim();
             
-            {
-                Timer timer = new Timer(50, e -> {
-                    offset = (offset + 1) % 360;
-                    repaint();
+            if (message) {
+                const time = new Date().toLocaleTimeString('ru-RU', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
                 });
-                timer.start();
+                
+                const user = fromSide === 'left' ? 'User 1' : 'User 2';
+                const formattedMessage = `[${time}] ${user}: ${message}`;
+                
+                // Определяем стили для отправителя
+                const senderBold = fromSide === 'left' ? boldLeft : boldRight;
+                const senderFontSize = fromSide === 'left' ? fontSizeLeft : fontSizeRight;
+                
+                // Добавляем сообщение в оба чата
+                addMessage('left', formattedMessage, fromSide === 'left', senderBold, senderFontSize);
+                addMessage('right', formattedMessage, fromSide === 'right', senderBold, senderFontSize);
+                
+                // Очищаем поле ввода
+                messageInput.value = '';
+                
+                // Обновляем статус
+                updateStatus(fromSide);
+            }
+        }
+
+        // Добавление сообщения в чат
+        function addMessage(side, text, isOwn, isBold, fontSize) {
+            const chatArea = document.getElementById(`chat${side === 'left' ? 'Left' : 'Right'}`);
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${side === 'left' ? 'message-left' : 'message-right'}`;
+            messageDiv.style.fontWeight = isBold ? 'bold' : 'normal';
+            messageDiv.style.fontSize = fontSize + 'px';
+            
+            // Разбиваем текст на части (время, пользователь, сообщение)
+            const parts = text.match(/\[(.*?)\]\s(.*?):\s(.*)/);
+            if (parts) {
+                const time = parts[1];
+                const user = parts[2];
+                const msgText = parts[3];
+                
+                messageDiv.innerHTML = `
+                    <div>${msgText}</div>
+                    <div class="message-time">${time} - ${user}</div>
+                `;
+            } else {
+                messageDiv.textContent = text;
             }
             
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
-                int w = getWidth();
-                int h = getHeight();
-                
-                // Draw animated gradient
-                for (int i = 0; i < 10; i++) {
-                    g2d.setColor(new Color(
-                        gradientColors[i % gradientColors.length].getRed(),
-                        gradientColors[i % gradientColors.length].getGreen(),
-                        gradientColors[i % gradientColors.length].getBlue(),
-                        30
-                    ));
-                    
-                    int x = (int)(Math.sin(Math.toRadians(offset + i * 36)) * 100 + w/2);
-                    int y = (int)(Math.cos(Math.toRadians(offset + i * 36)) * 100 + h/2);
-                    
-                    g2d.fillOval(x - 150, y - 150, 300, 300);
-                }
-            }
-        };
-        backgroundPanel.setOpaque(false);
-        glass.add(backgroundPanel, BorderLayout.CENTER);
-    }
-    
-    private void setupKeyboardShortcuts() {
-        // Ctrl+Enter to send
-        messageAreaLeft.getInputMap(JComponent.WHEN_FOCUSED)
-            .put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK), "send");
-        messageAreaLeft.getActionMap().put("send", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                sendMessage(messageAreaLeft, true);
-            }
-        });
-        
-        messageAreaRight.getInputMap(JComponent.WHEN_FOCUSED)
-            .put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK), "send");
-        messageAreaRight.getActionMap().put("send", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                sendMessage(messageAreaRight, false);
-            }
-        });
-        
-        // Escape to clear
-        messageAreaLeft.getInputMap(JComponent.WHEN_FOCUSED)
-            .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "clear");
-        messageAreaLeft.getActionMap().put("clear", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                messageAreaLeft.setText("");
-            }
-        });
-        
-        messageAreaRight.getInputMap(JComponent.WHEN_FOCUSED)
-            .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "clear");
-        messageAreaRight.getActionMap().put("clear", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                messageAreaRight.setText("");
-            }
-        });
-    }
-    
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
         }
-        
-        SwingUtilities.invokeLater(() -> {
-            ModernTwoWayChat chat = new ModernTwoWayChat();
-            chat.setVisible(true);
+
+        // Очистка поля ввода
+        function clearInput(side) {
+            document.getElementById(`message${side === 'left' ? 'Left' : 'Right'}`).value = '';
+        }
+
+        // Обновление статуса
+        function updateStatus(side) {
+            const statusElement = document.getElementById(`status${side === 'left' ? 'Left' : 'Right'}`);
+            const originalText = statusElement.textContent;
+            
+            statusElement.textContent = 'Typing...';
+            statusElement.style.background = '#FFA500';
+            
+            setTimeout(() => {
+                statusElement.textContent = 'Online';
+                statusElement.style.background = '#4CAF50';
+            }, 1000);
+        }
+
+        // Обработка горячих клавиш
+        document.getElementById('messageLeft').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                sendMessage('left');
+            } else if (e.key === 'Escape') {
+                clearInput('left');
+            }
         });
-    }
-}
+
+        document.getElementById('messageRight').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                sendMessage('right');
+            } else if (e.key === 'Escape') {
+                clearInput('right');
+            }
+        });
+
+        // Пример сообщений при загрузке
+        window.onload = function() {
+            setTimeout(() => {
+                addMessage('left', '[12:00] User 1: Привет! Как дела?', true, false, 14);
+                addMessage('right', '[12:01] User 2: Привет! Всё отлично, а у тебя?', true, false, 14);
+                addMessage('left', '[12:02] User 1: Тоже хорошо! Как проходит день?', true, false, 14);
+            }, 500);
+        };
+    </script>
+</body>
+</html>
