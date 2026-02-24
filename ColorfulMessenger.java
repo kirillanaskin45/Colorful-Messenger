@@ -1,0 +1,455 @@
+package ColorfulMessenger;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
+public class ColorfulMessenger extends JFrame {
+    
+    private JTextArea chatAreaLeft, chatAreaRight;
+    private JTextArea messageAreaLeft, messageAreaRight;
+    private JButton sendButtonLeft, sendButtonRight;
+    private JButton clearButtonLeft, clearButtonRight;
+    private JLabel statusLeft, statusRight;
+    private JCheckBox boldCheckLeft, boldCheckRight;
+    private JComboBox<String> fontSizeLeft, fontSizeRight;
+    private JPanel leftPanel, rightPanel;
+    
+    private final Color[] gradientColors = {
+        new Color(255, 182, 193), // Light Pink
+        new Color(176, 224, 230), // Powder Blue
+        new Color(221, 160, 221), // Plum
+        new Color(255, 218, 185), // Peach
+        new Color(144, 238, 144)  // Light Green
+    };
+    
+    public ColorfulMessenger() {
+        setTitle("✨ Modern Two-Way Colorful Chat ✨");
+        setSize(1000, 700);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        
+        // Инициализируем компоненты ДО их использования
+        chatAreaLeft = createChatArea(new Color(240, 248, 255));
+        chatAreaRight = createChatArea(new Color(255, 240, 245));
+        messageAreaLeft = createMessageArea();
+        messageAreaRight = createMessageArea();
+        
+        // Main layout
+        setLayout(new BorderLayout());
+        
+        // Create header
+        add(createHeader(), BorderLayout.NORTH);
+        
+        // Create main chat panels
+        JSplitPane splitPane = createChatSplitPane();
+        add(splitPane, BorderLayout.CENTER);
+        
+        // Create status bar
+        add(createStatusBar(), BorderLayout.SOUTH);
+        
+        // Add animated background
+        addAnimatedBackground();
+        
+        // Setup keyboard shortcuts
+        setupKeyboardShortcuts();
+        
+        // Style the frame
+        getContentPane().setBackground(new Color(245, 245, 245));
+    }
+    
+    private JPanel createHeader() {
+        JPanel header = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                int w = getWidth();
+                int h = getHeight();
+                GradientPaint gp = new GradientPaint(0, 0, new Color(147, 112, 219), 
+                                                      w, 0, new Color(255, 182, 193));
+                g2d.setPaint(gp);
+                g2d.fillRect(0, 0, w, h);
+            }
+        };
+        header.setPreferredSize(new Dimension(getWidth(), 60));
+        header.setLayout(new FlowLayout(FlowLayout.CENTER));
+        
+        JLabel titleLabel = new JLabel("Colorful Messenger 2.0");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setForeground(Color.WHITE);
+        header.add(titleLabel);
+        
+        return header;
+    }
+    
+    private JSplitPane createChatSplitPane() {
+        // Create left panel (User 1)
+        leftPanel = createChatPanel("User 1 👤", new Color(70, 130, 180), true);
+        
+        // Create right panel (User 2)
+        rightPanel = createChatPanel("User 2 👩", new Color(255, 105, 180), false);
+        
+        // Split pane
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
+        splitPane.setDividerLocation(470);
+        splitPane.setDividerSize(10);
+        splitPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        return splitPane;
+    }
+    
+    private JPanel createChatPanel(String title, Color buttonColor, boolean isLeft) {
+        JPanel panel = new JPanel(new BorderLayout(5, 5));
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(buttonColor, 2), 
+                title, 
+                javax.swing.border.TitledBorder.CENTER,
+                javax.swing.border.TitledBorder.TOP,
+                new Font("Segoe UI", Font.BOLD, 14),
+                buttonColor
+            ),
+            BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
+        panel.setBackground(new Color(255, 255, 255, 180));
+        
+        // Используем уже инициализированные chatArea
+        JTextArea chatArea = isLeft ? chatAreaLeft : chatAreaRight;
+        
+        JScrollPane scrollPane = new JScrollPane(chatArea);
+        scrollPane.setBorder(BorderFactory.createLineBorder(buttonColor, 1));
+        
+        // Input area with formatting options
+        JPanel inputPanel = createInputPanel(isLeft, buttonColor);
+        
+        // Status label
+        JLabel status = new JLabel("Online");
+        status.setForeground(new Color(46, 204, 113));
+        status.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        
+        if (isLeft) {
+            statusLeft = status;
+        } else {
+            statusRight = status;
+        }
+        
+        panel.add(status, BorderLayout.NORTH);
+        panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(inputPanel, BorderLayout.SOUTH);
+        
+        return panel;
+    }
+    
+    private JPanel createInputPanel(boolean isLeft, Color buttonColor) {
+        JPanel inputPanel = new JPanel(new BorderLayout(5, 5));
+        inputPanel.setOpaque(false);
+        
+        // Используем уже инициализированные messageArea
+        JTextArea messageArea = isLeft ? messageAreaLeft : messageAreaRight;
+        JScrollPane messageScroll = new JScrollPane(messageArea);
+        messageScroll.setPreferredSize(new Dimension(200, 60));
+        
+        // Formatting options
+        JPanel formatPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
+        formatPanel.setOpaque(false);
+        
+        JCheckBox boldCheck = new JCheckBox("B");
+        boldCheck.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        boldCheck.setToolTipText("Bold text");
+        boldCheck.setOpaque(false);
+        
+        String[] sizes = {"12", "14", "16", "18", "20"};
+        JComboBox<String> sizeCombo = new JComboBox<>(sizes);
+        sizeCombo.setSelectedItem("14");
+        sizeCombo.setToolTipText("Font size");
+        
+        if (isLeft) {
+            boldCheckLeft = boldCheck;
+            fontSizeLeft = sizeCombo;
+        } else {
+            boldCheckRight = boldCheck;
+            fontSizeRight = sizeCombo;
+        }
+        
+        formatPanel.add(boldCheck);
+        formatPanel.add(sizeCombo);
+        
+        // Button panel
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 5, 0));
+        buttonPanel.setOpaque(false);
+        
+        JButton sendBtn = createStyledButton("Send 📤", buttonColor);
+        JButton clearBtn = createStyledButton("Clear 🧹", new Color(169, 169, 169));
+        
+        sendBtn.addActionListener(e -> sendMessage(messageArea, isLeft));
+        clearBtn.addActionListener(e -> messageArea.setText(""));
+        
+        // Font formatting listeners
+        boldCheck.addActionListener(e -> updateFont(messageArea, isLeft));
+        sizeCombo.addActionListener(e -> updateFont(messageArea, isLeft));
+        
+        buttonPanel.add(sendBtn);
+        buttonPanel.add(clearBtn);
+        
+        if (isLeft) {
+            sendButtonLeft = sendBtn;
+            clearButtonLeft = clearBtn;
+        } else {
+            sendButtonRight = sendBtn;
+            clearButtonRight = clearBtn;
+        }
+        
+        // Assemble input panel
+        JPanel topInput = new JPanel(new BorderLayout(5, 0));
+        topInput.setOpaque(false);
+        topInput.add(messageScroll, BorderLayout.CENTER);
+        topInput.add(formatPanel, BorderLayout.WEST);
+        
+        inputPanel.add(topInput, BorderLayout.CENTER);
+        inputPanel.add(buttonPanel, BorderLayout.EAST);
+        
+        return inputPanel;
+    }
+    
+    private void updateFont(JTextArea messageArea, boolean isLeft) {
+        JCheckBox boldCheck = isLeft ? boldCheckLeft : boldCheckRight;
+        JComboBox<String> fontSize = isLeft ? fontSizeLeft : fontSizeRight;
+        
+        int size = Integer.parseInt((String) fontSize.getSelectedItem());
+        int style = boldCheck.isSelected() ? Font.BOLD : Font.PLAIN;
+        
+        messageArea.setFont(new Font("Segoe UI", style, size));
+    }
+    
+    private JButton createStyledButton(String text, Color bgColor) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bgColor);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btn.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(bgColor.darker(), 1),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        
+        // Hover effect
+        btn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                btn.setBackground(bgColor.brighter());
+            }
+            public void mouseExited(MouseEvent e) {
+                btn.setBackground(bgColor);
+            }
+        });
+        
+        return btn;
+    }
+    
+    private JTextArea createChatArea(Color bgColor) {
+        JTextArea ta = new JTextArea();
+        ta.setEditable(false);
+        ta.setLineWrap(true);
+        ta.setWrapStyleWord(true);
+        ta.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        ta.setBackground(bgColor);
+        ta.setMargin(new Insets(10, 10, 10, 10));
+        return ta;
+    }
+    
+    private JTextArea createMessageArea() {
+        JTextArea ta = new JTextArea(3, 20);
+        ta.setLineWrap(true);
+        ta.setWrapStyleWord(true);
+        ta.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        ta.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+            BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
+        return ta;
+    }
+    
+    private JPanel createStatusBar() {
+        JPanel statusBar = new JPanel(new BorderLayout());
+        statusBar.setBackground(new Color(240, 240, 240));
+        statusBar.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        
+        JLabel statusLabel = new JLabel("Both users are online • Secure connection • Encrypted");
+        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        statusLabel.setForeground(new Color(100, 100, 100));
+        
+        JLabel timeLabel = new JLabel();
+        timeLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        
+        // Update time
+        Timer timer = new Timer(1000, e -> {
+            LocalTime now = LocalTime.now();
+            timeLabel.setText(now.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+        });
+        timer.start();
+        
+        statusBar.add(statusLabel, BorderLayout.WEST);
+        statusBar.add(timeLabel, BorderLayout.EAST);
+        
+        return statusBar;
+    }
+    
+    private void sendMessage(JTextArea inputArea, boolean fromLeft) {
+        String message = inputArea.getText().trim();
+        if (!message.isEmpty()) {
+            String user = fromLeft ? "User 1" : "User 2";
+            String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+            
+            // Check formatting
+            JCheckBox boldCheck = fromLeft ? boldCheckLeft : boldCheckRight;
+            JComboBox<String> fontSize = fromLeft ? fontSizeLeft : fontSizeRight;
+            
+            String formattedMessage = String.format("[%s] %s: %s\n", time, user, message);
+            
+            // Add to both chat areas with formatting
+            if (fromLeft) {
+                appendFormattedMessage(chatAreaLeft, formattedMessage, boldCheck, fontSize);
+                appendFormattedMessage(chatAreaRight, formattedMessage, boldCheck, fontSize);
+            } else {
+                appendFormattedMessage(chatAreaRight, formattedMessage, boldCheck, fontSize);
+                appendFormattedMessage(chatAreaLeft, formattedMessage, boldCheck, fontSize);
+            }
+            
+            inputArea.setText("");
+            
+            // Update status
+            if (fromLeft) {
+                statusLeft.setText("Typing...");
+                Timer statusTimer = new Timer(1000, e -> statusLeft.setText("Online"));
+                statusTimer.setRepeats(false);
+                statusTimer.start();
+            } else {
+                statusRight.setText("Typing...");
+                Timer statusTimer = new Timer(1000, e -> statusRight.setText("Online"));
+                statusTimer.setRepeats(false);
+                statusTimer.start();
+            }
+        }
+    }
+    
+    private void appendFormattedMessage(JTextArea chatArea, String message, 
+                                       JCheckBox boldCheck, JComboBox<String> fontSize) {
+        int currentSize = Integer.parseInt((String) fontSize.getSelectedItem());
+        boolean isBold = boldCheck.isSelected();
+        
+        // Store current font
+        Font currentFont = chatArea.getFont();
+        
+        // Apply formatting
+        chatArea.setFont(new Font(currentFont.getFontName(), 
+                                  isBold ? Font.BOLD : Font.PLAIN, 
+                                  currentSize));
+        chatArea.append(message);
+        
+        // Restore default font
+        chatArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        
+        // Auto-scroll
+        chatArea.setCaretPosition(chatArea.getDocument().getLength());
+    }
+    
+    private void addAnimatedBackground() {
+        JPanel glass = (JPanel) getGlassPane();
+        glass.setVisible(true);
+        glass.setLayout(new BorderLayout());
+        
+        JPanel backgroundPanel = new JPanel() {
+            private int offset = 0;
+            
+            {
+                Timer timer = new Timer(50, e -> {
+                    offset = (offset + 1) % 360;
+                    repaint();
+                });
+                timer.start();
+            }
+            
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                int w = getWidth();
+                int h = getHeight();
+                
+                // Draw animated gradient
+                for (int i = 0; i < 10; i++) {
+                    g2d.setColor(new Color(
+                        gradientColors[i % gradientColors.length].getRed(),
+                        gradientColors[i % gradientColors.length].getGreen(),
+                        gradientColors[i % gradientColors.length].getBlue(),
+                        30
+                    ));
+                    
+                    int x = (int)(Math.sin(Math.toRadians(offset + i * 36)) * 100 + w/2);
+                    int y = (int)(Math.cos(Math.toRadians(offset + i * 36)) * 100 + h/2);
+                    
+                    g2d.fillOval(x - 150, y - 150, 300, 300);
+                }
+            }
+        };
+        backgroundPanel.setOpaque(false);
+        glass.add(backgroundPanel, BorderLayout.CENTER);
+    }
+    
+    private void setupKeyboardShortcuts() {
+        // Ctrl+Enter to send
+        messageAreaLeft.getInputMap(JComponent.WHEN_FOCUSED)
+            .put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK), "send");
+        messageAreaLeft.getActionMap().put("send", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sendMessage(messageAreaLeft, true);
+            }
+        });
+        
+        messageAreaRight.getInputMap(JComponent.WHEN_FOCUSED)
+            .put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK), "send");
+        messageAreaRight.getActionMap().put("send", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sendMessage(messageAreaRight, false);
+            }
+        });
+        
+        // Escape to clear
+        messageAreaLeft.getInputMap(JComponent.WHEN_FOCUSED)
+            .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "clear");
+        messageAreaLeft.getActionMap().put("clear", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                messageAreaLeft.setText("");
+            }
+        });
+        
+        messageAreaRight.getInputMap(JComponent.WHEN_FOCUSED)
+            .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "clear");
+        messageAreaRight.getActionMap().put("clear", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                messageAreaRight.setText("");
+            }
+        });
+    }
+    
+    public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        SwingUtilities.invokeLater(() -> {
+            ColorfulMessenger chat = new ColorfulMessenger();
+            chat.setVisible(true);
+        });
+    }
+}
