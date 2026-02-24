@@ -1,5 +1,4 @@
 # Colorful-Messenger
-<img width="1213" height="730" alt="image" src="https://github.com/user-attachments/assets/32c86525-4515-49a6-8da4-6b43874c41c2" />
 Двусторонний чат с красочным интерфейсом, анимированным фоном и поддержкой форматирования текста. Реализован на Java Swing и HTML/JS.
 
 ## 🚀 Возможности
@@ -15,10 +14,8 @@
 - HTML5/CSS3/JavaScript (веб версия)
 
 ## 📸 Скриншоты
-*Добавьте скриншоты здесь*
+<img width="1213" height="730" alt="image" src="https://github.com/user-attachments/assets/32c86525-4515-49a6-8da4-6b43874c41c2" />
 
-## 🔧 Запуск
-### Java версия
-```bash
-javac ModernTwoWayChat.java
-java ModernTwoWayChat
+## 🔧 Запуск на хостинге
+- serene-strudel-4ee0b5.netlify.app
+
