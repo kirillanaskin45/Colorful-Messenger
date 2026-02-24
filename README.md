@@ -16,6 +16,6 @@
 ## 📸 Скриншоты
 <img width="1213" height="730" alt="image" src="https://github.com/user-attachments/assets/32c86525-4515-49a6-8da4-6b43874c41c2" />
 
-## 🔧 Запуск на хостинге
+## 🔧 Ссылка на хостинг
 - serene-strudel-4ee0b5.netlify.app
 
